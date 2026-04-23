@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MedStore — Pharmacy Management</title>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --green-50: #EAF3DE; --green-100: #C0DD97; --green-200: #97C459; --green-400: #639922;
+    --green-600: #3B6D11; --green-800: #27500A; --green-900: #173404;
+    --teal-50: #E1F5EE; --teal-100: #9FE1CB; --teal-200: #5DCAA5; --teal-400: #1D9E75;
+    --teal-600: #0F6E56; --teal-800: #085041; --teal-900: #04342C;
+    --amber-50: #FAEEDA; --amber-100: #FAC775; --amber-200: #EF9F27; --amber-400: #BA7517;
+    --amber-600: #854F0B; --amber-800: #633806;
+    --red-50: #FCEBEB; --red-100: #F7C1C1; --red-200: #F09595; --red-400: #E24B4A;
+    --red-600: #A32D2D; --red-800: #791F1F;
+    --gray-50: #F1EFE8; --gray-100: #D3D1C7; --gray-200: #B4B2A9; --gray-400: #888780;
+    --gray-600: #5F5E5A; --gray-800: #444441; --gray-900: #2C2C2A;
+    --blue-50: #E6F1FB; --blue-100: #B5D4F4; --blue-200: #85B7EB; --blue-400: #378ADD;
+    --blue-600: #185FA5; --blue-800: #0C447C;
+  }
+  body {
+    font-family: 'Syne', sans-serif;
+    background: #f5f3ee;
+    color: #2C2C2A;
+    min-height: 100vh;
+  }
+  #root { min-height: 100vh; }
+  input, select, textarea, button {
+    font-family: inherit;
+    font-size: 14px;
+  }
+  input[type="text"], input[type="number"], input[type="date"], select {
+    border: 1px solid var(--gray-100);
+    border-radius: 6px;
+    padding: 8px 12px;
+    background: #fff;
+    color: var(--gray-900);
+    outline: none;
+    width: 100%;
+    transition: border-color 0.15s;
+  }
+  input:focus, select:focus { border-color: var(--teal-400); }
+  button {
+    cursor: pointer;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  button:active { transform: scale(0.98); }
+  table { border-collapse: collapse; width: 100%; }
+  th { font-weight: 600; font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--gray-400); text-align: left; }
+  td, th { padding: 10px 12px; border-bottom: 1px solid #eeecea; }
+  tr:last-child td { border-bottom: none; }
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--gray-100); border-radius: 4px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useMemo } = React;
+
+const INITIAL_MEDICINES = [
+  { id: 1, name: "Paracetamol 500mg", category: "Analgesic", stock: 240, price: 2.5, cost: 1.2, expiry: "2026-08-01", mfg: "Cipla", hsn: "3004", gst: 12 },
+  { id: 2, name: "Amoxicillin 250mg", category: "Antibiotic", stock: 85, price: 8.0, cost: 4.5, expiry: "2026-03-15", mfg: "Sun Pharma", hsn: "3004", gst: 12 },
+  { id: 3, name: "Metformin 500mg", category: "Antidiabetic", stock: 150, price: 5.5, cost: 2.8, expiry: "2027-01-01", mfg: "Glenmark", hsn: "3004", gst: 5 },
+  { id: 4, name: "Atorvastatin 10mg", category: "Cardiac", stock: 60, price: 12.0, cost: 6.0, expiry: "2026-11-30", mfg: "Pfizer", hsn: "3004", gst: 12 },
+  { id: 5, name: "Omeprazole 20mg", category: "Antacid", stock: 12, price: 6.5, cost: 3.0, expiry: "2026-06-10", mfg: "Zydus", hsn: "3004", gst: 12 },
+  { id: 6, name: "Cetirizine 10mg", category: "Antiallergic", stock: 200, price: 3.0, cost: 1.5, expiry: "2027-03-01", mfg: "Mankind", hsn: "3004", gst: 12 },
+  { id: 7, name: "Pantoprazole 40mg", category: "Antacid", stock: 8, price: 9.0, cost: 4.5, expiry: "2025-12-31", mfg: "Abbott", hsn: "3004", gst: 12 },
+  { id: 8, name: "Azithromycin 500mg", category: "Antibiotic", stock: 45, price: 18.0, cost: 9.0, expiry: "2026-09-15", mfg: "Sun Pharma", hsn: "3004", gst: 12 },
+  { id: 9, name: "Vitamin D3 60K", category: "Supplement", stock: 95, price: 22.0, cost: 11.0, expiry: "2027-06-01", mfg: "Alkem", hsn: "2936", gst: 5 },
+  { id: 10, name: "Ibuprofen 400mg", category: "Analgesic", stock: 175, price: 4.0, cost: 2.0, expiry: "2026-12-01", mfg: "Cipla", hsn: "3004", gst: 12 },
+];
+
+const INITIAL_SALES = [
+  { id: 1, date: "2025-04-20", patient: "Ravi Kumar", items: [{medId:1, name:"Paracetamol 500mg", qty:2, price:2.5, gst:12}, {medId:6, name:"Cetirizine 10mg", qty:1, price:3.0, gst:12}], total: 8.96, discount: 0, paid: "Cash" },
+  { id: 2, date: "2025-04-21", patient: "Sunita Devi", items: [{medId:3, name:"Metformin 500mg", qty:3, price:5.5, gst:5}], total: 17.33, discount: 5, paid: "UPI" },
+  { id: 3, date: "2025-04-22", patient: "Mohammed Ali", items: [{medId:4, name:"Atorvastatin 10mg", qty:1, price:12.0, gst:12}], total: 13.44, discount: 0, paid: "Card" },
+  { id: 4, date: "2025-04-23", patient: "Priya Nair", items: [{medId:2, name:"Amoxicillin 250mg", qty:2, price:8.0, gst:12}, {medId:1, name:"Paracetamol 500mg", qty:1, price:2.5, gst:12}], total: 21.28, discount: 0, paid: "Cash" },
+];
+
+function App() {
+  const [tab, setTab] = useState("dashboard");
+  const [medicines, setMedicines] = useState(INITIAL_MEDICINES);
+  const [sales, setSales] = useState(INITIAL_SALES);
+  const [cart, setCart] = useState([]);
+  const [patient, setPatient] = useState("");
+  const [discount, setDiscount] = useState(0);
+  const [payment, setPayment] = useState("Cash");
+  const [searchMed, setSearchMed] = useState("");
+  const [invSearch, setInvSearch] = useState("");
+  const [toast, setToast] = useState(null);
+  const [showAddMed, setShowAddMed] = useState(false);
+  const [editMed, setEditMed] = useState(null);
+  const [showBill, setShowBill] = useState(null);
+  const [newMed, setNewMed] = useState({name:"",category:"",stock:"",price:"",cost:"",expiry:"",mfg:"",gst:12});
+
+  const showToast = (msg, type="success") => {
+    setToast({msg, type});
+    setTimeout(() => setToast(null), 2800);
+  };
+
+  const today = new Date().toISOString().split("T")[0];
+  const todaySales = sales.filter(s => s.date === today);
+  const todayRevenue = todaySales.reduce((a,s) => a+s.total, 0);
+  const monthSales = sales.filter(s => s.date.startsWith("2025-04"));
+  const monthRevenue = monthSales.reduce((a,s) => a+s.total, 0);
+  const lowStock = medicines.filter(m => m.stock < 20);
+  const expiringSoon = medicines.filter(m => {
+    const d = new Date(m.expiry); const now = new Date();
+    const diff = (d - now) / (1000*60*60*24);
+    return diff < 90 && diff > 0;
+  });
+  const expired = medicines.filter(m => new Date(m.expiry) < new Date());
+
+  // Cart calculations
+  const cartSubtotal = cart.reduce((a,c) => a + c.price * c.qty, 0);
+  const cartGst = cart.reduce((a,c) => a + (c.price * c.qty * c.gst / 100), 0);
+  const cartTotal = cartSubtotal + cartGst - discount;
+
+  const addToCart = (med) => {
+    if (med.stock <= 0) { showToast("Out of stock!", "error"); return; }
+    setCart(prev => {
+      const existing = prev.find(c => c.id === med.id);
+      if (existing) {
+        if (existing.qty >= med.stock) { showToast("Insufficient stock!", "error"); return prev; }
+        return prev.map(c => c.id === med.id ? {...c, qty: c.qty+1} : c);
+      }
+      return [...prev, {...med, qty:1}];
+    });
+  };
+
+  const removeFromCart = (id) => setCart(prev => prev.filter(c => c.id !== id));
+  const updateQty = (id, qty) => {
+    if (qty <= 0) { removeFromCart(id); return; }
+    const med = medicines.find(m => m.id === id);
+    if (qty > med.stock) { showToast("Insufficient stock!", "error"); return; }
+    setCart(prev => prev.map(c => c.id === id ? {...c, qty} : c));
+  };
+
+  const completeSale = () => {
+    if (!patient.trim()) { showToast("Enter patient name", "error"); return; }
+    if (cart.length === 0) { showToast("Cart is empty", "error"); return; }
+    const sale = {
+      id: Date.now(),
+      date: today,
+      patient,
+      items: cart.map(c => ({medId:c.id, name:c.name, qty:c.qty, price:c.price, gst:c.gst})),
+      total: parseFloat(cartTotal.toFixed(2)),
+      discount,
+      paid: payment
+    };
+    setSales(prev => [sale, ...prev]);
+    setMedicines(prev => prev.map(m => {
+      const ci = cart.find(c => c.id === m.id);
+      return ci ? {...m, stock: m.stock - ci.qty} : m;
+    }));
+    setShowBill(sale);
+    setCart([]);
+    setPatient("");
+    setDiscount(0);
+    showToast("Sale completed successfully!");
+  };
+
+  const saveMed = () => {
+    if (!newMed.name || !newMed.price || !newMed.stock) { showToast("Fill required fields", "error"); return; }
+    if (editMed) {
+      setMedicines(prev => prev.map(m => m.id === editMed.id ? {...m, ...newMed, price:+newMed.price, cost:+newMed.cost, stock:+newMed.stock, gst:+newMed.gst} : m));
+      showToast("Medicine updated");
+    } else {
+      setMedicines(prev => [...prev, {...newMed, id: Date.now(), price:+newMed.price, cost:+newMed.cost, stock:+newMed.stock, gst:+newMed.gst}]);
+      showToast("Medicine added");
+    }
+    setShowAddMed(false); setEditMed(null);
+    setNewMed({name:"",category:"",stock:"",price:"",cost:"",expiry:"",mfg:"",gst:12});
+  };
+
+  const openEdit = (med) => {
+    setEditMed(med); setNewMed({...med});
+    setShowAddMed(true);
+  };
+
+  const filteredMeds = medicines.filter(m => m.name.toLowerCase().includes(searchMed.toLowerCase()) || m.category.toLowerCase().includes(searchMed.toLowerCase()));
+  const filteredInv = medicines.filter(m => m.name.toLowerCase().includes(invSearch.toLowerCase()) || m.category.toLowerCase().includes(invSearch.toLowerCase()) || m.mfg.toLowerCase().includes(invSearch.toLowerCase()));
+
+  const tabs = [
+    {id:"dashboard", label:"Dashboard"},
+    {id:"billing", label:"Billing"},
+    {id:"inventory", label:"Inventory"},
+    {id:"sales", label:"Sales History"},
+    {id:"alerts", label:`Alerts${lowStock.length+expiringSoon.length+expired.length > 0 ? ` (${lowStock.length+expiringSoon.length+expired.length})` : ""}`},
+  ];
+
+  return (
+    <div style={{minHeight:"100vh", display:"flex", flexDirection:"column"}}>
+      {/* Header */}
+      <header style={{background:"#1c2b1f", color:"#e8f5e0", padding:"0 28px", display:"flex", alignItems:"center", gap:24, boxShadow:"0 2px 12px rgba(0,0,0,0.15)"}}>
+        <div style={{display:"flex", alignItems:"center", gap:10, padding:"14px 0"}}>
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="11" y="2" width="6" height="24" rx="3" fill="#5DCAA5"/><rect x="2" y="11" width="24" height="6" rx="3" fill="#5DCAA5"/></svg>
+          <div>
+            <div style={{fontFamily:"'DM Serif Display',serif", fontSize:18, lineHeight:1}}>MedStore</div>
+            <div style={{fontSize:10, color:"#9FE1CB", letterSpacing:"0.1em"}}>PHARMACY MANAGER</div>
+          </div>
+        </div>
+        <nav style={{display:"flex", gap:2, flex:1}}>
+          {tabs.map(t => (
+            <button key={t.id} onClick={() => setTab(t.id)} style={{
+              background: tab===t.id ? "rgba(93,202,165,0.15)" : "transparent",
+              color: tab===t.id ? "#5DCAA5" : "#9FE1CB",
+              padding:"10px 16px", fontSize:13, fontWeight: tab===t.id ? 700 : 400,
+              borderBottom: tab===t.id ? "2px solid #5DCAA5" : "2px solid transparent",
+              borderRadius:0, transition:"all 0.15s"
+            }}>{t.label}</button>
+          ))}
+        </nav>
+        <div style={{fontSize:12, color:"#9FE1CB"}}>{new Date().toLocaleDateString("en-IN", {weekday:"short", day:"numeric", month:"short", year:"numeric"})}</div>
+      </header>
+
+      {/* Toast */}
+      {toast && (
+        <div style={{
+          position:"fixed", top:20, right:20, zIndex:9999,
+          background: toast.type==="error" ? "#791F1F" : "#085041",
+          color:"#fff", padding:"10px 18px", borderRadius:8, fontSize:13, fontWeight:600,
+          boxShadow:"0 4px 16px rgba(0,0,0,0.2)", animation:"fadeIn 0.2s ease"
+        }}>{toast.msg}</div>
+      )}
+
+      <main style={{flex:1, padding:"28px", maxWidth:1200, width:"100%", margin:"0 auto"}}>
+        {tab === "dashboard" && <Dashboard medicines={medicines} sales={sales} todayRevenue={todayRevenue} monthRevenue={monthRevenue} todaySales={todaySales} lowStock={lowStock} expiringSoon={expiringSoon} expired={expired} />}
+        {tab === "billing" && <Billing medicines={filteredMeds} searchMed={searchMed} setSearchMed={setSearchMed} cart={cart} addToCart={addToCart} removeFromCart={removeFromCart} updateQty={updateQty} patient={patient} setPatient={setPatient} discount={discount} setDiscount={setDiscount} payment={payment} setPayment={setPayment} cartSubtotal={cartSubtotal} cartGst={cartGst} cartTotal={cartTotal} completeSale={completeSale} showBill={showBill} setShowBill={setShowBill} />}
+        {tab === "inventory" && <Inventory medicines={filteredInv} invSearch={invSearch} setInvSearch={setInvSearch} openEdit={openEdit} setShowAddMed={setShowAddMed} setNewMed={setNewMed} setEditMed={setEditMed} newMed={newMed} setNewMed2={setNewMed} showAddMed={showAddMed} saveMed={saveMed} editMed={editMed} />}
+        {tab === "sales" && <SalesHistory sales={sales} />}
+        {tab === "alerts" && <Alerts lowStock={lowStock} expiringSoon={expiringSoon} expired={expired} />}
+      </main>
+
+      <style>{`
+        @keyframes fadeIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+        .card { background:#fff; border-radius:12px; border:1px solid #eeecea; padding:20px; }
+        .btn-primary { background:#1D9E75; color:#fff; padding:10px 20px; font-size:14px; }
+        .btn-primary:hover { opacity:0.88; }
+        .btn-danger { background:#E24B4A; color:#fff; padding:6px 12px; font-size:12px; }
+        .btn-outline { background:#fff; border:1px solid #D3D1C7; color:#444441; padding:8px 14px; font-size:13px; }
+        .btn-outline:hover { border-color:#888780; }
+        .tag { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+        tr:hover td { background:#f9f8f5; }
+      `}</style>
+    </div>
+  );
+}
+
+function StatCard({label, value, sub, color="#1D9E75", icon}) {
+  return (
+    <div className="card" style={{display:"flex", flexDirection:"column", gap:6}}>
+      <div style={{display:"flex", justifyContent:"space-between", alignItems:"flex-start"}}>
+        <span style={{fontSize:12, color:"#888780", fontWeight:600, letterSpacing:"0.06em", textTransform:"uppercase"}}>{label}</span>
+        {icon && <span style={{fontSize:22}}>{icon}</span>}
+      </div>
+      <div style={{fontSize:28, fontWeight:700, color, fontFamily:"'DM Mono',monospace"}}>{value}</div>
+      {sub && <div style={{fontSize:12, color:"#888780"}}>{sub}</div>}
+    </div>
+  );
+}
+
+function Dashboard({medicines, sales, todayRevenue, monthRevenue, todaySales, lowStock, expiringSoon, expired}) {
+  const totalStock = medicines.reduce((a,m) => a+m.stock, 0);
+  const totalValue = medicines.reduce((a,m) => a+m.stock*m.price, 0);
+
+  const topSelling = useMemo(() => {
+    const counts = {};
+    sales.forEach(s => s.items.forEach(i => { counts[i.name] = (counts[i.name]||0) + i.qty; }));
+    return Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  }, [sales]);
+
+  return (
+    <div>
+      <h1 style={{fontFamily:"'DM Serif Display',serif", fontSize:26, marginBottom:24}}>Dashboard Overview</h1>
+      <div style={{display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:16, marginBottom:28}}>
+        <StatCard label="Today's Revenue" value={`₹${todayRevenue.toFixed(2)}`} sub={`${todaySales.length} bills today`} color="#0F6E56" />
+        <StatCard label="Month Revenue" value={`₹${monthRevenue.toFixed(2)}`} sub="April 2025" color="#185FA5" />
+        <StatCard label="Total Stock" value={totalStock.toLocaleString()} sub={`${medicines.length} products`} color="#BA7517" />
+        <StatCard label="Inventory Value" value={`₹${totalValue.toFixed(0)}`} sub="at selling price" color="#639922" />
+      </div>
+
+      <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:20}}>
+        <div className="card">
+          <h3 style={{fontSize:14, fontWeight:700, marginBottom:16, color:"#444441"}}>Top Selling Medicines</h3>
+          {topSelling.map(([name, qty], i) => (
+            <div key={name} style={{display:"flex", alignItems:"center", gap:10, marginBottom:10}}>
+              <span style={{width:22, height:22, borderRadius:"50%", background:"#E1F5EE", color:"#0F6E56", fontSize:11, fontWeight:700, display:"flex", alignItems:"center", justifyContent:"center"}}>{i+1}</span>
+              <span style={{flex:1, fontSize:13}}>{name}</span>
+              <div style={{height:6, width:80, background:"#f1efe8", borderRadius:4, overflow:"hidden"}}>
+                <div style={{height:"100%", width:`${(qty/topSelling[0][1])*100}%`, background:"#1D9E75", borderRadius:4}}></div>
+              </div>
+              <span style={{fontSize:13, fontWeight:600, color:"#27500A", width:30, textAlign:"right"}}>{qty}</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="card">
+          <h3 style={{fontSize:14, fontWeight:700, marginBottom:16, color:"#444441"}}>Quick Alerts</h3>
+          {lowStock.length > 0 && <div style={{background:"#FCEBEB", borderLeft:"3px solid #E24B4A", padding:"10px 14px", borderRadius:"0 6px 6px 0", marginBottom:10}}>
+            <div style={{fontSize:13, color:"#791F1F", fontWeight:700}}>{lowStock.length} items low stock</div>
+            <div style={{fontSize:12, color:"#A32D2D"}}>{lowStock.map(m=>m.name).slice(0,2).join(", ")}{lowStock.length>2 ? " ..." : ""}</div>
+          </div>}
+          {expiringSoon.length > 0 && <div style={{background:"#FAEEDA", borderLeft:"3px solid #BA7517", padding:"10px 14px", borderRadius:"0 6px 6px 0", marginBottom:10}}>
+            <div style={{fontSize:13, color:"#633806", fontWeight:700}}>{expiringSoon.length} items expiring within 90 days</div>
+            <div style={{fontSize:12, color:"#854F0B"}}>{expiringSoon.map(m=>m.name).slice(0,2).join(", ")}{expiringSoon.length>2 ? " ..." : ""}</div>
+          </div>}
+          {expired.length > 0 && <div style={{background:"#FCEBEB", borderLeft:"3px solid #A32D2D", padding:"10px 14px", borderRadius:"0 6px 6px 0", marginBottom:10}}>
+            <div style={{fontSize:13, color:"#791F1F", fontWeight:700}}>{expired.length} EXPIRED items</div>
+            <div style={{fontSize:12, color:"#A32D2D"}}>{expired.map(m=>m.name).join(", ")}</div>
+          </div>}
+          {lowStock.length===0 && expiringSoon.length===0 && expired.length===0 && <div style={{color:"#639922", fontSize:13, fontWeight:600}}>✓ All clear — no alerts</div>}
+
+          <div style={{marginTop:20, borderTop:"1px solid #eeecea", paddingTop:16}}>
+            <h4 style={{fontSize:12, fontWeight:700, letterSpacing:"0.06em", textTransform:"uppercase", color:"#888780", marginBottom:10}}>Recent Sales</h4>
+            {todaySales.slice(0,3).map(s => (
+              <div key={s.id} style={{display:"flex", justifyContent:"space-between", fontSize:13, marginBottom:6}}>
+                <span>{s.patient}</span>
+                <span style={{fontWeight:600, color:"#0F6E56"}}>₹{s.total}</span>
+              </div>
+            ))}
+            {todaySales.length === 0 && <div style={{color:"#888780", fontSize:13}}>No sales today yet</div>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Billing({medicines, searchMed, setSearchMed, cart, addToCart, removeFromCart, updateQty, patient, setPatient, discount, setDiscount, payment, setPayment, cartSubtotal, cartGst, cartTotal, completeSale, showBill, setShowBill}) {
+  return (
+    <div>
+      <h1 style={{fontFamily:"'DM Serif Display',serif", fontSize:26, marginBottom:24}}>New Bill</h1>
+      {showBill ? (
+        <BillPreview bill={showBill} onClose={() => setShowBill(null)} />
+      ) : (
+        <div style={{display:"grid", gridTemplateColumns:"1fr 380px", gap:20, alignItems:"start"}}>
+          <div>
+            <div style={{marginBottom:16}}>
+              <input type="text" placeholder="Search medicines by name or category..." value={searchMed} onChange={e=>setSearchMed(e.target.value)} />
+            </div>
+            <div style={{display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:10, maxHeight:460, overflowY:"auto", paddingRight:4}}>
+              {medicines.map(med => (
+                <div key={med.id} onClick={() => addToCart(med)} className="card" style={{cursor:med.stock>0?"pointer":"not-allowed", opacity:med.stock<=0?0.5:1, padding:14, transition:"box-shadow 0.15s", position:"relative"}}>
+                  <div style={{fontSize:11, background:"#E1F5EE", color:"#0F6E56", padding:"2px 8px", borderRadius:20, display:"inline-block", marginBottom:6, fontWeight:700}}>{med.category}</div>
+                  <div style={{fontSize:13, fontWeight:600, lineHeight:1.3, marginBottom:4}}>{med.name}</div>
+                  <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:6}}>
+                    <span style={{fontSize:15, fontWeight:700, color:"#1D9E75", fontFamily:"'DM Mono',monospace"}}>₹{med.price}</span>
+                    <span style={{fontSize:11, color: med.stock<20?"#E24B4A":"#888780"}}>Stock: {med.stock}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="card" style={{position:"sticky", top:20}}>
+            <h3 style={{fontSize:14, fontWeight:700, marginBottom:14, color:"#444441"}}>Bill Summary</h3>
+            <input type="text" placeholder="Patient name *" value={patient} onChange={e=>setPatient(e.target.value)} style={{marginBottom:12}} />
+
+            {cart.length === 0 ? (
+              <div style={{textAlign:"center", padding:"32px 0", color:"#888780", fontSize:13}}>
+                <div style={{fontSize:32, marginBottom:8}}>🛒</div>
+                Click medicines to add to cart
+              </div>
+            ) : (
+              <div style={{maxHeight:260, overflowY:"auto", marginBottom:12}}>
+                {cart.map(item => (
+                  <div key={item.id} style={{display:"flex", alignItems:"center", gap:8, padding:"6px 0", borderBottom:"1px solid #f1efe8"}}>
+                    <div style={{flex:1, fontSize:12}}>
+                      <div style={{fontWeight:600}}>{item.name}</div>
+                      <div style={{color:"#888780"}}>₹{item.price} × {item.qty}</div>
+                    </div>
+                    <div style={{display:"flex", alignItems:"center", gap:4}}>
+                      <button onClick={()=>updateQty(item.id, item.qty-1)} style={{width:22,height:22,background:"#f1efe8",color:"#444441",borderRadius:4,fontSize:14,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700}}>−</button>
+                      <span style={{fontSize:13, fontWeight:600, minWidth:16, textAlign:"center"}}>{item.qty}</span>
+                      <button onClick={()=>updateQty(item.id, item.qty+1)} style={{width:22,height:22,background:"#E1F5EE",color:"#0F6E56",borderRadius:4,fontSize:14,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700}}>+</button>
+                    </div>
+                    <span style={{fontSize:13, fontWeight:700, minWidth:40, textAlign:"right", color:"#1D9E75"}}>₹{(item.price*item.qty).toFixed(2)}</span>
+                    <button onClick={()=>removeFromCart(item.id)} style={{background:"transparent", color:"#E24B4A", fontSize:16, padding:0}}>×</button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div style={{borderTop:"1px solid #eeecea", paddingTop:12, marginTop:4}}>
+              <div style={{display:"flex", justifyContent:"space-between", fontSize:13, color:"#888780", marginBottom:4}}>
+                <span>Subtotal</span><span>₹{cartSubtotal.toFixed(2)}</span>
+              </div>
+              <div style={{display:"flex", justifyContent:"space-between", fontSize:13, color:"#888780", marginBottom:8}}>
+                <span>GST</span><span>₹{cartGst.toFixed(2)}</span>
+              </div>
+              <div style={{display:"flex", gap:8, alignItems:"center", marginBottom:10}}>
+                <label style={{fontSize:12, color:"#888780", whiteSpace:"nowrap"}}>Discount ₹</label>
+                <input type="number" value={discount} onChange={e=>setDiscount(Math.max(0,+e.target.value))} style={{width:80}} min="0" />
+              </div>
+              <div style={{display:"flex", justifyContent:"space-between", fontSize:18, fontWeight:700, color:"#1c2b1f", marginBottom:14}}>
+                <span>Total</span><span style={{fontFamily:"'DM Mono',monospace"}}>₹{Math.max(0,cartTotal).toFixed(2)}</span>
+              </div>
+              <select value={payment} onChange={e=>setPayment(e.target.value)} style={{marginBottom:12}}>
+                <option>Cash</option><option>UPI</option><option>Card</option><option>Credit</option>
+              </select>
+              <button className="btn-primary" style={{width:"100%"}} onClick={completeSale}>
+                Complete Sale →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function BillPreview({bill, onClose}) {
+  return (
+    <div className="card" style={{maxWidth:480, margin:"0 auto"}}>
+      <div style={{textAlign:"center", borderBottom:"1px dashed #D3D1C7", paddingBottom:16, marginBottom:16}}>
+        <div style={{fontFamily:"'DM Serif Display',serif", fontSize:22}}>MedStore Pharmacy</div>
+        <div style={{fontSize:12, color:"#888780"}}>GST Invoice</div>
+        <div style={{fontSize:12, color:"#888780", marginTop:4}}>Date: {bill.date} | Bill #: {bill.id.toString().slice(-6)}</div>
+      </div>
+      <div style={{marginBottom:12}}>
+        <div style={{fontSize:13, color:"#888780"}}>Patient</div>
+        <div style={{fontSize:15, fontWeight:600}}>{bill.patient}</div>
+      </div>
+      <table style={{marginBottom:16}}>
+        <thead>
+          <tr>
+            <th>Medicine</th><th style={{textAlign:"right"}}>Qty</th><th style={{textAlign:"right"}}>Price</th><th style={{textAlign:"right"}}>GST</th><th style={{textAlign:"right"}}>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          {bill.items.map((item,i) => {
+            const base = item.price * item.qty;
+            const gstAmt = base * item.gst / 100;
+            return <tr key={i}>
+              <td style={{fontSize:13}}>{item.name}</td>
+              <td style={{textAlign:"right", fontSize:13}}>{item.qty}</td>
+              <td style={{textAlign:"right", fontSize:13}}>₹{item.price}</td>
+              <td style={{textAlign:"right", fontSize:13}}>{item.gst}%</td>
+              <td style={{textAlign:"right", fontSize:13, fontWeight:600}}>₹{(base+gstAmt).toFixed(2)}</td>
+            </tr>;
+          })}
+        </tbody>
+      </table>
+      <div style={{borderTop:"1px dashed #D3D1C7", paddingTop:12}}>
+        {bill.discount > 0 && <div style={{display:"flex", justifyContent:"space-between", fontSize:13, color:"#E24B4A", marginBottom:6}}><span>Discount</span><span>− ₹{bill.discount}</span></div>}
+        <div style={{display:"flex", justifyContent:"space-between", fontSize:18, fontWeight:700}}>
+          <span>Total Paid</span>
+          <span style={{fontFamily:"'DM Mono',monospace", color:"#1D9E75"}}>₹{bill.total}</span>
+        </div>
+        <div style={{fontSize:12, color:"#888780", marginTop:4}}>Payment: {bill.paid}</div>
+      </div>
+      <div style={{textAlign:"center", marginTop:20}}>
+        <div style={{fontSize:12, color:"#888780", marginBottom:12}}>Thank you for your purchase!</div>
+        <button className="btn-primary" onClick={onClose}>New Bill</button>
+      </div>
+    </div>
+  );
+}
+
+function Inventory({medicines, invSearch, setInvSearch, openEdit, setShowAddMed, setNewMed, setEditMed, newMed, setNewMed2, showAddMed, saveMed, editMed}) {
+  const categories = [...new Set(medicines.map(m => m.category))];
+  return (
+    <div>
+      <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24}}>
+        <h1 style={{fontFamily:"'DM Serif Display',serif", fontSize:26}}>Inventory</h1>
+        <button className="btn-primary" onClick={() => {setNewMed({name:"",category:"",stock:"",price:"",cost:"",expiry:"",mfg:"",gst:12}); setEditMed(null); setShowAddMed(true);}}>+ Add Medicine</button>
+      </div>
+
+      {showAddMed && (
+        <div className="card" style={{marginBottom:24, background:"#f9fdf7", borderColor:"#C0DD97"}}>
+          <h3 style={{fontSize:15, fontWeight:700, marginBottom:16}}>{editMed ? "Edit Medicine" : "Add New Medicine"}</h3>
+          <div style={{display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:12}}>
+            <div><label style={{fontSize:12,color:"#888780",display:"block",marginBottom:4}}>Name *</label><input type="text" value={newMed.name} onChange={e=>setNewMed2({...newMed,name:e.target.value})} /></div>
+            <div><label style={{fontSize:12,color:"#888780",display:"block",marginBottom:4}}>Category</label><input type="text" value={newMed.category} onChange={e=>setNewMed2({...newMed,category:e.target.value})} /></div>
+            <div><label style={{fontSize:12,color:"#888780",display:"block",marginBottom:4}}>Manufacturer</label><input type="text" value={newMed.mfg} onChange={e=>setNewMed2({...newMed,mfg:e.target.value})} /></div>
+            <div><label style={{fontSize:12,color:"#888780",display:"block",marginBottom:4}}>Stock (units) *</label><input type="number" value={newMed.stock} onChange={e=>setNewMed2({...newMed,stock:e.target.value})} /></div>
+            <div><label style={{fontSize:12,color:"#888780",display:"block",marginBottom:4}}>MRP (₹) *</label><input type="number" value={newMed.price} onChange={e=>setNewMed2({...newMed,price:e.target.value})} /></div>
+            <div><label style={{fontSize:12,color:"#888780",display:"block",marginBottom:4}}>Cost Price (₹)</label><input type="number" value={newMed.cost} onChange={e=>setNewMed2({...newMed,cost:e.target.value})} /></div>
+            <div><label style={{fontSize:12,color:"#888780",display:"block",marginBottom:4}}>Expiry Date</label><input type="date" value={newMed.expiry} onChange={e=>setNewMed2({...newMed,expiry:e.target.value})} /></div>
+            <div><label style={{fontSize:12,color:"#888780",display:"block",marginBottom:4}}>GST %</label>
+              <select value={newMed.gst} onChange={e=>setNewMed2({...newMed,gst:+e.target.value})}>
+                <option value={0}>0%</option><option value={5}>5%</option><option value={12}>12%</option><option value={18}>18%</option>
+              </select>
+            </div>
+          </div>
+          <div style={{display:"flex", gap:10, marginTop:16}}>
+            <button className="btn-primary" onClick={saveMed}>{editMed ? "Update" : "Save Medicine"}</button>
+            <button className="btn-outline" onClick={() => {setShowAddMed(false); setEditMed(null);}}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      <div style={{marginBottom:16}}>
+        <input type="text" placeholder="Search by name, category, or manufacturer..." value={invSearch} onChange={e=>setInvSearch(e.target.value)} />
+      </div>
+
+      <div className="card" style={{padding:0, overflow:"hidden"}}>
+        <table>
+          <thead style={{background:"#f9f8f5"}}>
+            <tr>
+              <th>Medicine</th><th>Category</th><th>Manufacturer</th>
+              <th style={{textAlign:"right"}}>Stock</th>
+              <th style={{textAlign:"right"}}>MRP (₹)</th>
+              <th style={{textAlign:"right"}}>Cost (₹)</th>
+              <th style={{textAlign:"right"}}>Margin</th>
+              <th>Expiry</th><th>GST</th><th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {medicines.map(med => {
+              const margin = med.cost > 0 ? ((med.price-med.cost)/med.price*100).toFixed(0) : "—";
+              const isExpired = new Date(med.expiry) < new Date();
+              const isLow = med.stock < 20;
+              return (
+                <tr key={med.id}>
+                  <td style={{fontWeight:600, fontSize:13}}>{med.name}</td>
+                  <td><span className="tag" style={{background:"#E1F5EE", color:"#0F6E56"}}>{med.category}</span></td>
+                  <td style={{fontSize:13, color:"#888780"}}>{med.mfg}</td>
+                  <td style={{textAlign:"right"}}>
+                    <span style={{fontWeight:600, color: isLow ? "#E24B4A" : "#2C2C2A", fontFamily:"'DM Mono',monospace"}}>{med.stock}</span>
+                    {isLow && <span className="tag" style={{background:"#FCEBEB",color:"#A32D2D",marginLeft:4}}>LOW</span>}
+                  </td>
+                  <td style={{textAlign:"right", fontFamily:"'DM Mono',monospace", fontWeight:600}}>₹{med.price}</td>
+                  <td style={{textAlign:"right", fontFamily:"'DM Mono',monospace", color:"#888780"}}>₹{med.cost}</td>
+                  <td style={{textAlign:"right"}}><span style={{color: +margin > 30 ? "#3B6D11" : "#BA7517", fontWeight:600, fontSize:13}}>{margin}%</span></td>
+                  <td style={{fontSize:12}}>
+                    <span style={{color: isExpired ? "#E24B4A" : "#2C2C2A", fontWeight: isExpired ? 700 : 400}}>
+                      {isExpired ? "⚠ " : ""}{med.expiry}
+                    </span>
+                  </td>
+                  <td style={{fontSize:12, color:"#888780"}}>{med.gst}%</td>
+                  <td>
+                    <button className="btn-outline" style={{fontSize:12, padding:"4px 10px"}} onClick={() => openEdit(med)}>Edit</button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function SalesHistory({sales}) {
+  const [searchSale, setSearchSale] = useState("");
+  const filtered = sales.filter(s => s.patient.toLowerCase().includes(searchSale.toLowerCase()) || s.date.includes(searchSale));
+  const totalRevenue = filtered.reduce((a,s) => a+s.total, 0);
+
+  return (
+    <div>
+      <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24}}>
+        <h1 style={{fontFamily:"'DM Serif Display',serif", fontSize:26}}>Sales History</h1>
+        <div style={{background:"#E1F5EE", color:"#0F6E56", padding:"8px 16px", borderRadius:8, fontSize:14, fontWeight:700}}>
+          Total: ₹{totalRevenue.toFixed(2)}
+        </div>
+      </div>
+      <div style={{marginBottom:16}}>
+        <input type="text" placeholder="Search by patient name or date (YYYY-MM-DD)..." value={searchSale} onChange={e=>setSearchSale(e.target.value)} />
+      </div>
+      <div className="card" style={{padding:0}}>
+        <table>
+          <thead style={{background:"#f9f8f5"}}>
+            <tr>
+              <th>Bill #</th><th>Date</th><th>Patient</th><th>Items</th>
+              <th style={{textAlign:"right"}}>Total (₹)</th>
+              <th>Payment</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map(s => (
+              <tr key={s.id}>
+                <td style={{fontSize:12, color:"#888780", fontFamily:"'DM Mono',monospace"}}>#{s.id.toString().slice(-6)}</td>
+                <td style={{fontSize:13}}>{s.date}</td>
+                <td style={{fontWeight:600, fontSize:13}}>{s.patient}</td>
+                <td style={{fontSize:12, color:"#888780"}}>{s.items.map(i=>`${i.name} ×${i.qty}`).join(", ")}</td>
+                <td style={{textAlign:"right", fontWeight:700, fontFamily:"'DM Mono',monospace", color:"#1D9E75"}}>₹{s.total.toFixed(2)}</td>
+                <td>
+                  <span className="tag" style={{
+                    background: s.paid==="Cash" ? "#EAF3DE" : s.paid==="UPI" ? "#E6F1FB" : "#FAEEDA",
+                    color: s.paid==="Cash" ? "#27500A" : s.paid==="UPI" ? "#0C447C" : "#633806"
+                  }}>{s.paid}</span>
+                </td>
+              </tr>
+            ))}
+            {filtered.length === 0 && <tr><td colSpan={6} style={{textAlign:"center", color:"#888780", padding:32}}>No sales found</td></tr>}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function Alerts({lowStock, expiringSoon, expired}) {
+  return (
+    <div>
+      <h1 style={{fontFamily:"'DM Serif Display',serif", fontSize:26, marginBottom:24}}>Alerts & Notifications</h1>
+
+      {expired.length > 0 && (
+        <div style={{marginBottom:24}}>
+          <h2 style={{fontSize:15, fontWeight:700, color:"#791F1F", marginBottom:12, display:"flex", alignItems:"center", gap:8}}>
+            <span style={{background:"#E24B4A", color:"#fff", width:24, height:24, borderRadius:"50%", display:"inline-flex", alignItems:"center", justifyContent:"center", fontSize:12}}>{expired.length}</span>
+            Expired Medicines — Remove Immediately
+          </h2>
+          <div className="card" style={{borderColor:"#F09595", padding:0}}>
+            <table>
+              <thead style={{background:"#FCEBEB"}}><tr><th>Medicine</th><th>Category</th><th>Stock</th><th>Expiry</th><th>Loss Value</th></tr></thead>
+              <tbody>
+                {expired.map(m => (
+                  <tr key={m.id}>
+                    <td style={{fontWeight:600,fontSize:13}}>{m.name}</td>
+                    <td><span className="tag" style={{background:"#FCEBEB",color:"#A32D2D"}}>{m.category}</span></td>
+                    <td style={{fontFamily:"'DM Mono',monospace"}}>{m.stock}</td>
+                    <td style={{color:"#E24B4A",fontWeight:700}}>{m.expiry}</td>
+                    <td style={{color:"#E24B4A",fontWeight:700}}>₹{(m.stock*m.cost).toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {lowStock.length > 0 && (
+        <div style={{marginBottom:24}}>
+          <h2 style={{fontSize:15, fontWeight:700, color:"#633806", marginBottom:12, display:"flex", alignItems:"center", gap:8}}>
+            <span style={{background:"#BA7517", color:"#fff", width:24, height:24, borderRadius:"50%", display:"inline-flex", alignItems:"center", justifyContent:"center", fontSize:12}}>{lowStock.length}</span>
+            Low Stock — Reorder Required
+          </h2>
+          <div className="card" style={{borderColor:"#FAC775", padding:0}}>
+            <table>
+              <thead style={{background:"#FAEEDA"}}><tr><th>Medicine</th><th>Category</th><th>Current Stock</th><th>MRP</th><th>Manufacturer</th></tr></thead>
+              <tbody>
+                {lowStock.map(m => (
+                  <tr key={m.id}>
+                    <td style={{fontWeight:600,fontSize:13}}>{m.name}</td>
+                    <td><span className="tag" style={{background:"#FAEEDA",color:"#633806"}}>{m.category}</span></td>
+                    <td><span style={{color:"#E24B4A",fontWeight:700,fontFamily:"'DM Mono',monospace"}}>{m.stock} units</span></td>
+                    <td style={{fontFamily:"'DM Mono',monospace"}}>₹{m.price}</td>
+                    <td style={{fontSize:13,color:"#888780"}}>{m.mfg}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {expiringSoon.length > 0 && (
+        <div style={{marginBottom:24}}>
+          <h2 style={{fontSize:15, fontWeight:700, color:"#185FA5", marginBottom:12, display:"flex", alignItems:"center", gap:8}}>
+            <span style={{background:"#378ADD", color:"#fff", width:24, height:24, borderRadius:"50%", display:"inline-flex", alignItems:"center", justifyContent:"center", fontSize:12}}>{expiringSoon.length}</span>
+            Expiring Within 90 Days
+          </h2>
+          <div className="card" style={{borderColor:"#85B7EB", padding:0}}>
+            <table>
+              <thead style={{background:"#E6F1FB"}}><tr><th>Medicine</th><th>Category</th><th>Stock</th><th>Expiry Date</th><th>Days Left</th></tr></thead>
+              <tbody>
+                {expiringSoon.sort((a,b)=>new Date(a.expiry)-new Date(b.expiry)).map(m => {
+                  const days = Math.ceil((new Date(m.expiry)-new Date())/(1000*60*60*24));
+                  return <tr key={m.id}>
+                    <td style={{fontWeight:600,fontSize:13}}>{m.name}</td>
+                    <td><span className="tag" style={{background:"#E6F1FB",color:"#0C447C"}}>{m.category}</span></td>
+                    <td style={{fontFamily:"'DM Mono',monospace"}}>{m.stock}</td>
+                    <td>{m.expiry}</td>
+                    <td><span style={{fontWeight:700, color: days<30?"#E24B4A":days<60?"#BA7517":"#185FA5"}}>{days} days</span></td>
+                  </tr>;
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {lowStock.length===0 && expiringSoon.length===0 && expired.length===0 && (
+        <div className="card" style={{textAlign:"center", padding:"60px 40px"}}>
+          <div style={{fontSize:48, marginBottom:16}}>✓</div>
+          <h2 style={{fontSize:20, fontWeight:700, color:"#3B6D11"}}>All Clear!</h2>
+          <p style={{color:"#888780", marginTop:8}}>No alerts at this time. Your inventory is in good shape.</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
