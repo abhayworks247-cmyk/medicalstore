@@ -7,7 +7,7 @@
 <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Space+Mono:wght@400;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet" />
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -25,7 +25,7 @@
     --blue-600: #185FA5; --blue-800: #0C447C;
   }
   body {
-    font-family: 'Syne', sans-serif;
+    font-family: 'Outfit', sans-serif;
     background: #f5f3ee;
     color: #2C2C2A;
     min-height: 100vh;
@@ -203,15 +203,15 @@ function App() {
   return (
     <div style={{minHeight:"100vh", display:"flex", flexDirection:"column"}}>
       {/* Header */}
-      <header style={{background:"#1c2b1f", color:"#e8f5e0", padding:"0 28px", display:"flex", alignItems:"center", gap:24, boxShadow:"0 2px 12px rgba(0,0,0,0.15)"}}>
+      <header style={{background:"#1c2b1f", color:"#e8f5e0", padding:"0 28px", display:"flex", alignItems:"center", gap:24, boxShadow:"0 2px 12px rgba(0,0,0,0.15)", flexWrap:"wrap"}}>
         <div style={{display:"flex", alignItems:"center", gap:10, padding:"14px 0"}}>
           <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="11" y="2" width="6" height="24" rx="3" fill="#5DCAA5"/><rect x="2" y="11" width="24" height="6" rx="3" fill="#5DCAA5"/></svg>
           <div>
-            <div style={{fontFamily:"'DM Serif Display',serif", fontSize:18, lineHeight:1}}>MedStore</div>
+            <div style={{fontFamily:"'Playfair Display',serif", fontSize:18, lineHeight:1}}>MedStore</div>
             <div style={{fontSize:10, color:"#9FE1CB", letterSpacing:"0.1em"}}>PHARMACY MANAGER</div>
           </div>
         </div>
-        <nav style={{display:"flex", gap:2, flex:1}}>
+        <nav className="nav-tabs" style={{display:"flex", gap:2, flex:1}}>
           {tabs.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)} style={{
               background: tab===t.id ? "rgba(93,202,165,0.15)" : "transparent",
@@ -253,6 +253,26 @@ function App() {
         .btn-outline:hover { border-color:#888780; }
         .tag { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
         tr:hover td { background:#f9f8f5; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .grid-billing { display: grid; grid-template-columns: 1fr 380px; gap: 20px; align-items: start; }
+        .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; width: 100%; }
+        
+        @media (max-width: 900px) {
+          .grid-4 { grid-template-columns: repeat(2, 1fr); }
+          .grid-3 { grid-template-columns: repeat(2, 1fr); }
+          .grid-billing { grid-template-columns: 1fr; }
+          header { flex-wrap: wrap; }
+          .nav-tabs { flex-wrap: wrap; overflow-x: auto; padding-bottom: 8px; }
+        }
+        @media (max-width: 600px) {
+          .grid-4 { grid-template-columns: 1fr; }
+          .grid-3 { grid-template-columns: 1fr; }
+          .grid-2 { grid-template-columns: 1fr; }
+          main { padding: 16px !important; }
+        }
+
       `}</style>
     </div>
   );
@@ -265,7 +285,7 @@ function StatCard({label, value, sub, color="#1D9E75", icon}) {
         <span style={{fontSize:12, color:"#888780", fontWeight:600, letterSpacing:"0.06em", textTransform:"uppercase"}}>{label}</span>
         {icon && <span style={{fontSize:22}}>{icon}</span>}
       </div>
-      <div style={{fontSize:28, fontWeight:700, color, fontFamily:"'DM Mono',monospace"}}>{value}</div>
+      <div style={{fontSize:28, fontWeight:700, color, fontFamily:"'Space Mono',monospace"}}>{value}</div>
       {sub && <div style={{fontSize:12, color:"#888780"}}>{sub}</div>}
     </div>
   );
@@ -283,15 +303,15 @@ function Dashboard({medicines, sales, todayRevenue, monthRevenue, todaySales, lo
 
   return (
     <div>
-      <h1 style={{fontFamily:"'DM Serif Display',serif", fontSize:26, marginBottom:24}}>Dashboard Overview</h1>
-      <div style={{display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:16, marginBottom:28}}>
+      <h1 style={{fontFamily:"'Playfair Display',serif", fontSize:26, marginBottom:24}}>Dashboard Overview</h1>
+      <div className="grid-4" style={{marginBottom:28}}>
         <StatCard label="Today's Revenue" value={`₹${todayRevenue.toFixed(2)}`} sub={`${todaySales.length} bills today`} color="#0F6E56" />
         <StatCard label="Month Revenue" value={`₹${monthRevenue.toFixed(2)}`} sub="April 2025" color="#185FA5" />
         <StatCard label="Total Stock" value={totalStock.toLocaleString()} sub={`${medicines.length} products`} color="#BA7517" />
         <StatCard label="Inventory Value" value={`₹${totalValue.toFixed(0)}`} sub="at selling price" color="#639922" />
       </div>
 
-      <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:20}}>
+      <div className="grid-2">
         <div className="card">
           <h3 style={{fontSize:14, fontWeight:700, marginBottom:16, color:"#444441"}}>Top Selling Medicines</h3>
           {topSelling.map(([name, qty], i) => (
@@ -341,11 +361,11 @@ function Dashboard({medicines, sales, todayRevenue, monthRevenue, todaySales, lo
 function Billing({medicines, searchMed, setSearchMed, cart, addToCart, removeFromCart, updateQty, patient, setPatient, discount, setDiscount, payment, setPayment, cartSubtotal, cartGst, cartTotal, completeSale, showBill, setShowBill}) {
   return (
     <div>
-      <h1 style={{fontFamily:"'DM Serif Display',serif", fontSize:26, marginBottom:24}}>New Bill</h1>
+      <h1 style={{fontFamily:"'Playfair Display',serif", fontSize:26, marginBottom:24}}>New Bill</h1>
       {showBill ? (
         <BillPreview bill={showBill} onClose={() => setShowBill(null)} />
       ) : (
-        <div style={{display:"grid", gridTemplateColumns:"1fr 380px", gap:20, alignItems:"start"}}>
+        <div className="grid-billing">
           <div>
             <div style={{marginBottom:16}}>
               <input type="text" placeholder="Search medicines by name or category..." value={searchMed} onChange={e=>setSearchMed(e.target.value)} />
@@ -356,7 +376,7 @@ function Billing({medicines, searchMed, setSearchMed, cart, addToCart, removeFro
                   <div style={{fontSize:11, background:"#E1F5EE", color:"#0F6E56", padding:"2px 8px", borderRadius:20, display:"inline-block", marginBottom:6, fontWeight:700}}>{med.category}</div>
                   <div style={{fontSize:13, fontWeight:600, lineHeight:1.3, marginBottom:4}}>{med.name}</div>
                   <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:6}}>
-                    <span style={{fontSize:15, fontWeight:700, color:"#1D9E75", fontFamily:"'DM Mono',monospace"}}>₹{med.price}</span>
+                    <span style={{fontSize:15, fontWeight:700, color:"#1D9E75", fontFamily:"'Space Mono',monospace"}}>₹{med.price}</span>
                     <span style={{fontSize:11, color: med.stock<20?"#E24B4A":"#888780"}}>Stock: {med.stock}</span>
                   </div>
                 </div>
@@ -405,7 +425,7 @@ function Billing({medicines, searchMed, setSearchMed, cart, addToCart, removeFro
                 <input type="number" value={discount} onChange={e=>setDiscount(Math.max(0,+e.target.value))} style={{width:80}} min="0" />
               </div>
               <div style={{display:"flex", justifyContent:"space-between", fontSize:18, fontWeight:700, color:"#1c2b1f", marginBottom:14}}>
-                <span>Total</span><span style={{fontFamily:"'DM Mono',monospace"}}>₹{Math.max(0,cartTotal).toFixed(2)}</span>
+                <span>Total</span><span style={{fontFamily:"'Space Mono',monospace"}}>₹{Math.max(0,cartTotal).toFixed(2)}</span>
               </div>
               <select value={payment} onChange={e=>setPayment(e.target.value)} style={{marginBottom:12}}>
                 <option>Cash</option><option>UPI</option><option>Card</option><option>Credit</option>
@@ -425,7 +445,7 @@ function BillPreview({bill, onClose}) {
   return (
     <div className="card" style={{maxWidth:480, margin:"0 auto"}}>
       <div style={{textAlign:"center", borderBottom:"1px dashed #D3D1C7", paddingBottom:16, marginBottom:16}}>
-        <div style={{fontFamily:"'DM Serif Display',serif", fontSize:22}}>MedStore Pharmacy</div>
+        <div style={{fontFamily:"'Playfair Display',serif", fontSize:22}}>MedStore Pharmacy</div>
         <div style={{fontSize:12, color:"#888780"}}>GST Invoice</div>
         <div style={{fontSize:12, color:"#888780", marginTop:4}}>Date: {bill.date} | Bill #: {bill.id.toString().slice(-6)}</div>
       </div>
@@ -457,7 +477,7 @@ function BillPreview({bill, onClose}) {
         {bill.discount > 0 && <div style={{display:"flex", justifyContent:"space-between", fontSize:13, color:"#E24B4A", marginBottom:6}}><span>Discount</span><span>− ₹{bill.discount}</span></div>}
         <div style={{display:"flex", justifyContent:"space-between", fontSize:18, fontWeight:700}}>
           <span>Total Paid</span>
-          <span style={{fontFamily:"'DM Mono',monospace", color:"#1D9E75"}}>₹{bill.total}</span>
+          <span style={{fontFamily:"'Space Mono',monospace", color:"#1D9E75"}}>₹{bill.total}</span>
         </div>
         <div style={{fontSize:12, color:"#888780", marginTop:4}}>Payment: {bill.paid}</div>
       </div>
@@ -474,14 +494,14 @@ function Inventory({medicines, invSearch, setInvSearch, openEdit, setShowAddMed,
   return (
     <div>
       <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24}}>
-        <h1 style={{fontFamily:"'DM Serif Display',serif", fontSize:26}}>Inventory</h1>
+        <h1 style={{fontFamily:"'Playfair Display',serif", fontSize:26}}>Inventory</h1>
         <button className="btn-primary" onClick={() => {setNewMed({name:"",category:"",stock:"",price:"",cost:"",expiry:"",mfg:"",gst:12}); setEditMed(null); setShowAddMed(true);}}>+ Add Medicine</button>
       </div>
 
       {showAddMed && (
         <div className="card" style={{marginBottom:24, background:"#f9fdf7", borderColor:"#C0DD97"}}>
           <h3 style={{fontSize:15, fontWeight:700, marginBottom:16}}>{editMed ? "Edit Medicine" : "Add New Medicine"}</h3>
-          <div style={{display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:12}}>
+          <div className="grid-3">
             <div><label style={{fontSize:12,color:"#888780",display:"block",marginBottom:4}}>Name *</label><input type="text" value={newMed.name} onChange={e=>setNewMed2({...newMed,name:e.target.value})} /></div>
             <div><label style={{fontSize:12,color:"#888780",display:"block",marginBottom:4}}>Category</label><input type="text" value={newMed.category} onChange={e=>setNewMed2({...newMed,category:e.target.value})} /></div>
             <div><label style={{fontSize:12,color:"#888780",display:"block",marginBottom:4}}>Manufacturer</label><input type="text" value={newMed.mfg} onChange={e=>setNewMed2({...newMed,mfg:e.target.value})} /></div>
@@ -506,7 +526,7 @@ function Inventory({medicines, invSearch, setInvSearch, openEdit, setShowAddMed,
         <input type="text" placeholder="Search by name, category, or manufacturer..." value={invSearch} onChange={e=>setInvSearch(e.target.value)} />
       </div>
 
-      <div className="card" style={{padding:0, overflow:"hidden"}}>
+      <div className="card table-responsive" style={{padding:0}}>
         <table>
           <thead style={{background:"#f9f8f5"}}>
             <tr>
@@ -529,11 +549,11 @@ function Inventory({medicines, invSearch, setInvSearch, openEdit, setShowAddMed,
                   <td><span className="tag" style={{background:"#E1F5EE", color:"#0F6E56"}}>{med.category}</span></td>
                   <td style={{fontSize:13, color:"#888780"}}>{med.mfg}</td>
                   <td style={{textAlign:"right"}}>
-                    <span style={{fontWeight:600, color: isLow ? "#E24B4A" : "#2C2C2A", fontFamily:"'DM Mono',monospace"}}>{med.stock}</span>
+                    <span style={{fontWeight:600, color: isLow ? "#E24B4A" : "#2C2C2A", fontFamily:"'Space Mono',monospace"}}>{med.stock}</span>
                     {isLow && <span className="tag" style={{background:"#FCEBEB",color:"#A32D2D",marginLeft:4}}>LOW</span>}
                   </td>
-                  <td style={{textAlign:"right", fontFamily:"'DM Mono',monospace", fontWeight:600}}>₹{med.price}</td>
-                  <td style={{textAlign:"right", fontFamily:"'DM Mono',monospace", color:"#888780"}}>₹{med.cost}</td>
+                  <td style={{textAlign:"right", fontFamily:"'Space Mono',monospace", fontWeight:600}}>₹{med.price}</td>
+                  <td style={{textAlign:"right", fontFamily:"'Space Mono',monospace", color:"#888780"}}>₹{med.cost}</td>
                   <td style={{textAlign:"right"}}><span style={{color: +margin > 30 ? "#3B6D11" : "#BA7517", fontWeight:600, fontSize:13}}>{margin}%</span></td>
                   <td style={{fontSize:12}}>
                     <span style={{color: isExpired ? "#E24B4A" : "#2C2C2A", fontWeight: isExpired ? 700 : 400}}>
@@ -562,7 +582,7 @@ function SalesHistory({sales}) {
   return (
     <div>
       <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24}}>
-        <h1 style={{fontFamily:"'DM Serif Display',serif", fontSize:26}}>Sales History</h1>
+        <h1 style={{fontFamily:"'Playfair Display',serif", fontSize:26}}>Sales History</h1>
         <div style={{background:"#E1F5EE", color:"#0F6E56", padding:"8px 16px", borderRadius:8, fontSize:14, fontWeight:700}}>
           Total: ₹{totalRevenue.toFixed(2)}
         </div>
@@ -570,7 +590,7 @@ function SalesHistory({sales}) {
       <div style={{marginBottom:16}}>
         <input type="text" placeholder="Search by patient name or date (YYYY-MM-DD)..." value={searchSale} onChange={e=>setSearchSale(e.target.value)} />
       </div>
-      <div className="card" style={{padding:0}}>
+      <div className="card table-responsive" style={{padding:0}}>
         <table>
           <thead style={{background:"#f9f8f5"}}>
             <tr>
@@ -582,11 +602,11 @@ function SalesHistory({sales}) {
           <tbody>
             {filtered.map(s => (
               <tr key={s.id}>
-                <td style={{fontSize:12, color:"#888780", fontFamily:"'DM Mono',monospace"}}>#{s.id.toString().slice(-6)}</td>
+                <td style={{fontSize:12, color:"#888780", fontFamily:"'Space Mono',monospace"}}>#{s.id.toString().slice(-6)}</td>
                 <td style={{fontSize:13}}>{s.date}</td>
                 <td style={{fontWeight:600, fontSize:13}}>{s.patient}</td>
                 <td style={{fontSize:12, color:"#888780"}}>{s.items.map(i=>`${i.name} ×${i.qty}`).join(", ")}</td>
-                <td style={{textAlign:"right", fontWeight:700, fontFamily:"'DM Mono',monospace", color:"#1D9E75"}}>₹{s.total.toFixed(2)}</td>
+                <td style={{textAlign:"right", fontWeight:700, fontFamily:"'Space Mono',monospace", color:"#1D9E75"}}>₹{s.total.toFixed(2)}</td>
                 <td>
                   <span className="tag" style={{
                     background: s.paid==="Cash" ? "#EAF3DE" : s.paid==="UPI" ? "#E6F1FB" : "#FAEEDA",
@@ -606,7 +626,7 @@ function SalesHistory({sales}) {
 function Alerts({lowStock, expiringSoon, expired}) {
   return (
     <div>
-      <h1 style={{fontFamily:"'DM Serif Display',serif", fontSize:26, marginBottom:24}}>Alerts & Notifications</h1>
+      <h1 style={{fontFamily:"'Playfair Display',serif", fontSize:26, marginBottom:24}}>Alerts & Notifications</h1>
 
       {expired.length > 0 && (
         <div style={{marginBottom:24}}>
@@ -622,7 +642,7 @@ function Alerts({lowStock, expiringSoon, expired}) {
                   <tr key={m.id}>
                     <td style={{fontWeight:600,fontSize:13}}>{m.name}</td>
                     <td><span className="tag" style={{background:"#FCEBEB",color:"#A32D2D"}}>{m.category}</span></td>
-                    <td style={{fontFamily:"'DM Mono',monospace"}}>{m.stock}</td>
+                    <td style={{fontFamily:"'Space Mono',monospace"}}>{m.stock}</td>
                     <td style={{color:"#E24B4A",fontWeight:700}}>{m.expiry}</td>
                     <td style={{color:"#E24B4A",fontWeight:700}}>₹{(m.stock*m.cost).toFixed(2)}</td>
                   </tr>
@@ -647,8 +667,8 @@ function Alerts({lowStock, expiringSoon, expired}) {
                   <tr key={m.id}>
                     <td style={{fontWeight:600,fontSize:13}}>{m.name}</td>
                     <td><span className="tag" style={{background:"#FAEEDA",color:"#633806"}}>{m.category}</span></td>
-                    <td><span style={{color:"#E24B4A",fontWeight:700,fontFamily:"'DM Mono',monospace"}}>{m.stock} units</span></td>
-                    <td style={{fontFamily:"'DM Mono',monospace"}}>₹{m.price}</td>
+                    <td><span style={{color:"#E24B4A",fontWeight:700,fontFamily:"'Space Mono',monospace"}}>{m.stock} units</span></td>
+                    <td style={{fontFamily:"'Space Mono',monospace"}}>₹{m.price}</td>
                     <td style={{fontSize:13,color:"#888780"}}>{m.mfg}</td>
                   </tr>
                 ))}
@@ -664,7 +684,7 @@ function Alerts({lowStock, expiringSoon, expired}) {
             <span style={{background:"#378ADD", color:"#fff", width:24, height:24, borderRadius:"50%", display:"inline-flex", alignItems:"center", justifyContent:"center", fontSize:12}}>{expiringSoon.length}</span>
             Expiring Within 90 Days
           </h2>
-          <div className="card" style={{borderColor:"#85B7EB", padding:0}}>
+          <div className="card table-responsive" style={{borderColor:"#85B7EB", padding:0}}>
             <table>
               <thead style={{background:"#E6F1FB"}}><tr><th>Medicine</th><th>Category</th><th>Stock</th><th>Expiry Date</th><th>Days Left</th></tr></thead>
               <tbody>
@@ -673,7 +693,7 @@ function Alerts({lowStock, expiringSoon, expired}) {
                   return <tr key={m.id}>
                     <td style={{fontWeight:600,fontSize:13}}>{m.name}</td>
                     <td><span className="tag" style={{background:"#E6F1FB",color:"#0C447C"}}>{m.category}</span></td>
-                    <td style={{fontFamily:"'DM Mono',monospace"}}>{m.stock}</td>
+                    <td style={{fontFamily:"'Space Mono',monospace"}}>{m.stock}</td>
                     <td>{m.expiry}</td>
                     <td><span style={{fontWeight:700, color: days<30?"#E24B4A":days<60?"#BA7517":"#185FA5"}}>{days} days</span></td>
                   </tr>;
