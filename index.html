@@ -222,7 +222,7 @@ function App() {
             }}>{t.label}</button>
           ))}
         </nav>
-        <div style={{fontSize:12, color:"#9FE1CB"}}>{new Date().toLocaleDateString("en-IN", {weekday:"short", day:"numeric", month:"short", year:"numeric"})}</div>
+        <div className="header-date" style={{fontSize:12, color:"#9FE1CB"}}>{new Date().toLocaleDateString("en-IN", {weekday:"short", day:"numeric", month:"short", year:"numeric"})}</div>
       </header>
 
       {/* Toast */}
@@ -263,14 +263,17 @@ function App() {
           .grid-4 { grid-template-columns: repeat(2, 1fr); }
           .grid-3 { grid-template-columns: repeat(2, 1fr); }
           .grid-billing { grid-template-columns: 1fr; }
-          header { flex-wrap: wrap; }
-          .nav-tabs { flex-wrap: wrap; overflow-x: auto; padding-bottom: 8px; }
         }
         @media (max-width: 600px) {
           .grid-4 { grid-template-columns: 1fr; }
           .grid-3 { grid-template-columns: 1fr; }
           .grid-2 { grid-template-columns: 1fr; }
           main { padding: 16px !important; }
+          header { flex-direction: column; align-items: flex-start !important; padding: 12px 16px !important; gap: 12px !important; }
+          .header-date { display: none; }
+          .nav-tabs { flex-wrap: nowrap !important; overflow-x: auto; width: calc(100vw - 32px); padding-bottom: 2px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+          .nav-tabs::-webkit-scrollbar { display: none; }
+          .nav-tabs button { flex-shrink: 0; white-space: nowrap; }
         }
 
       `}</style>
